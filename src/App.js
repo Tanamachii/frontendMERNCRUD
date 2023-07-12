@@ -8,6 +8,11 @@ function App() {
     title: "",
     body: "",
   });
+  const [updateForm, setUpdateForm] = useState({
+    _id: null,
+    title: "",
+    body: "",
+  });
   //Use effect
   useEffect(() => {
     fetchNotes();
@@ -20,15 +25,6 @@ function App() {
     console.log(res);
     setNotes(res.data.notes);
     console.log(res);
-  };
-
-  const updateCreateFormField = (e) => {
-    const { name, value } = e.target;
-    setCreateForm({
-      ...createForm,
-      [name]: value,
-    });
-    console.log({ name, value });
   };
 
   const createNote = async (e) => {
@@ -52,6 +48,50 @@ function App() {
     setNotes(newNotes);
   };
 
+  const updateNote = async (e) => {
+    e.preventDefault();
+    const { title, body, _id } = updateForm;
+    //Send the update request
+    const res = await axios.put(`http://localhost:3000/notes/${_id}`, {
+      title,
+      body,
+    });
+    //Update state
+    const newNotes = [...notes];
+    const noteIndex = notes.findIndex((note) => {
+      return note._id === _id;
+    });
+    console.log(res.data.note);
+    newNotes[noteIndex] = res.data.notes;
+    setNotes(newNotes);
+
+    //Clear form state
+    setUpdateForm({ _id: null, title: "", body: "" });
+  };
+
+  const updateCreateFormField = (e) => {
+    const { name, value } = e.target;
+    setCreateForm({
+      ...createForm,
+      [name]: value,
+    });
+    console.log({ name, value });
+  };
+
+  const toogleUpdate = (note) => {
+    //Set state on update form
+    setUpdateForm({ title: note.title, body: note.body, _id: note._id });
+  };
+
+  const handleUpdateFieldChange = (e) => {
+    const { value, name } = e.target;
+
+    setUpdateForm({
+      ...updateForm,
+      [name]: value,
+    });
+  };
+
   return (
     <div className="App">
       <div>
@@ -64,27 +104,55 @@ function App() {
                 <button onClick={() => deleteNote(note._id)}>
                   Delete note
                 </button>
+                <button
+                  onClick={() => {
+                    toogleUpdate(note);
+                  }}
+                >
+                  Update note
+                </button>
               </div>
             );
           })}
       </div>
 
-      <div>
-        <h2>Crete note</h2>
-        <form onSubmit={createNote}>
-          <input
-            onChange={updateCreateFormField}
-            value={createForm.title}
-            name="title"
-          />
-          <textarea
-            onChange={updateCreateFormField}
-            value={createForm.body}
-            name="body"
-          />
-          <button type="submit">Create note</button>
-        </form>
-      </div>
+      {updateForm._id && (
+        <div>
+          <h2>Update note</h2>
+          <form onSubmit={updateNote}>
+            <input
+              onChange={handleUpdateFieldChange}
+              value={updateForm.title}
+              name="title"
+            />
+            <textarea
+              onChange={handleUpdateFieldChange}
+              value={updateForm.body}
+              name="body"
+            />
+            <button type="submit">Update note</button>
+          </form>
+        </div>
+      )}
+
+      {!updateForm._id && (
+        <div>
+          <h2>Crete note</h2>
+          <form onSubmit={createNote}>
+            <input
+              onChange={updateCreateFormField}
+              value={createForm.title}
+              name="title"
+            />
+            <textarea
+              onChange={updateCreateFormField}
+              value={createForm.body}
+              name="body"
+            />
+            <button type="submit">Create note</button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
