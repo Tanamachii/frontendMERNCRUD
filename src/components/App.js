@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import notesStore from "../stores/notesStore";
 
 function App() {
+  const store = notesStore();
   //State
   const [notes, setNotes] = useState(null);
   const [createForm, setCreateForm] = useState({
@@ -15,18 +17,9 @@ function App() {
   });
   //Use effect
   useEffect(() => {
-    fetchNotes();
+    store.fetchNotes();
   }, []);
   // Functions
-  const fetchNotes = async () => {
-    //Fetch the notes
-    const res = await axios.get("http://localhost:3000/notes");
-    //set to state
-    console.log(res);
-    setNotes(res.data.notes);
-    console.log(res);
-  };
-
   const createNote = async (e) => {
     e.preventDefault();
     //Create the note
@@ -69,15 +62,6 @@ function App() {
     setUpdateForm({ _id: null, title: "", body: "" });
   };
 
-  const updateCreateFormField = (e) => {
-    const { name, value } = e.target;
-    setCreateForm({
-      ...createForm,
-      [name]: value,
-    });
-    console.log({ name, value });
-  };
-
   const toogleUpdate = (note) => {
     //Set state on update form
     setUpdateForm({ title: note.title, body: note.body, _id: note._id });
@@ -96,8 +80,8 @@ function App() {
     <div className="App">
       <div>
         <h2>Notes:</h2>
-        {notes &&
-          notes.map((note) => {
+        {store.notes &&
+          store.notes.map((note) => {
             return (
               <div key={note._id}>
                 <h3> {note.title}</h3>
@@ -140,13 +124,13 @@ function App() {
           <h2>Crete note</h2>
           <form onSubmit={createNote}>
             <input
-              onChange={updateCreateFormField}
-              value={createForm.title}
+              onChange={store.updateCreateFormField}
+              value={store.createForm.title}
               name="title"
             />
             <textarea
-              onChange={updateCreateFormField}
-              value={createForm.body}
+              onChange={store.updateCreateFormField}
+              value={store.createForm.body}
               name="body"
             />
             <button type="submit">Create note</button>
